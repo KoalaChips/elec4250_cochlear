@@ -77,7 +77,7 @@ int readActivityData(float activity[LENGTH][WIDTH]) {
 }
 
 int writeActivity(float activity[LENGTH][WIDTH]) {
-    FILE *fp = fopen("C:\\Uni\\ELEC4250\\project\\ElFieldToPower\\activityData.csv", "w");
+    FILE *fp = fopen("C:\\Uni\\ELEC4250\\project\\ElFieldToActivity\\activityData.csv", "w");
     if (fp == NULL) {
         perror("Error opening file for writing\n");
         return -1;
@@ -101,6 +101,7 @@ int writeActivity(float activity[LENGTH][WIDTH]) {
 
 
 int main (void) {
+    printf("\nRunning Elfield to Activity conversion\n\n");
     float efData[LENGTH][WIDTH];
     readEfData(efData);
     // printf("%f\n", efData[160][275]);
