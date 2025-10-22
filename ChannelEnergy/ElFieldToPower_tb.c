@@ -1,0 +1,161 @@
+#include <stdio.h>
+#include <string.h>
+#include "ElFieldToPower.h"
+
+int compareData(double source[LENGTH][A_WIDTH], float result[LENGTH][A_WIDTH]) {
+    int noWrong = 0;
+    int displayCount = 0;
+
+    for (int i = 0; i < LENGTH; i++) {
+        for (int j = 0; j < A_WIDTH; j++) {
+            if (fabs(source[i][j] - result[i][j]) > 1e-7) {
+                noWrong++;
+                if (displayCount < 10) {
+                    printf("Source: %.64lf\nResult: %.64lf\nDiff:   %.64lf\n\n", source[i][j], result[i][j],fabs(source[i][j] - result[i][j]));
+                    displayCount++;
+                }
+            }
+        }
+    }
+
+    return noWrong;
+}
+
+
+int readEfData(float efData[LENGTH][WIDTH]) {
+    FILE *fp = fopen("C:\\Uni\\ELEC4250\\project\\ElFieldToPower\\efData.csv", "r");
+    if (fp == NULL) {
+        perror("Error opening file\n");
+        return -1;
+    }
+
+    char line[18627]; 
+    int row = 0; 
+    int col = 0; 
+    char *token;
+
+    while (fgets(line, sizeof(line), fp) && row < LENGTH) { 
+        token = strtok(line, ","); 
+        col = 0; 
+        while (token != NULL) { 
+            efData[row][col] = atof(token); 
+            token = strtok(NULL, ","); 
+            col++; 
+        }
+        row++;
+    }
+
+    fclose(fp);
+    return row;
+}
+
+int readAudioPwrOut(double audioPwrOut[LENGTH][A_WIDTH]) {
+    FILE *fp = fopen("C:\\Uni\\ELEC4250\\project\\ElFieldToPower\\audioPwrOut.csv", "r");
+    if (fp == NULL) {
+        perror("Error opening file\n");
+        return -1;
+    }
+
+    char line[19000]; 
+    int row = 0; 
+    int col = 0; 
+    char *token;
+
+    while (fgets(line, sizeof(line), fp) && row < LENGTH) { 
+        token = strtok(line, ","); 
+        col = 0; 
+        while (token != NULL) { 
+            audioPwrOut[row][col] = atof(token); 
+
+            // if (row == 1) {
+            //     printf("%d\n", col);
+            // }
+
+            token = strtok(NULL, ","); 
+            col++; 
+        }
+        row++;
+    }
+
+    fclose(fp);
+    return row;
+}
+
+int readAudioPwrIn(float audioPwrIn[LENGTH][A_WIDTH]) {
+    FILE *fp = fopen("C:\\Uni\\ELEC4250\\project\\ElFieldToPower\\audioPwrIn.csv", "r");
+    if (fp == NULL) {
+        perror("Error opening file\n");
+        return -1;
+    }
+
+    char line[19000]; 
+    int row = 0; 
+    int col = 0; 
+    char *token;
+
+    while (fgets(line, sizeof(line), fp) && row < LENGTH) { 
+        token = strtok(line, ","); 
+        col = 0; 
+        while (token != NULL) { 
+            audioPwrIn[row][col] = atof(token); 
+            token = strtok(NULL, ","); 
+            col++; 
+        }
+        row++;
+    }
+
+    fclose(fp);
+    return row;
+}
+
+int writeAudioPwr(float audioPwrOut[LENGTH][A_WIDTH]) {
+    FILE *fp = fopen("C:\\Uni\\ELEC4250\\project\\ElFieldToPower\\audioPwrOutData.csv", "w");
+    if (fp == NULL) {
+        perror("Error opening file for writing\n");
+        return -1;
+    }
+
+    for (int row = 0; row < LENGTH; row++) {
+        for (int col = 0; col < WIDTH; col++) {
+            // Print value, followed by a comma if not the last column
+            if (col < A_WIDTH - 1)
+                fprintf(fp, "%.64lf,", audioPwrOut[row][col]);
+            else
+                fprintf(fp, "%.64lf", audioPwrOut[row][col]);
+        }
+        fprintf(fp, "\n"); // Move to next line
+    }
+
+    fclose(fp);
+    return 0;
+}
+
+int main (void) {
+    float efData[LENGTH][WIDTH];
+    readEfData(efData);
+    float audioPwr[LENGTH][A_WIDTH];
+    readAudioPwrIn(audioPwr);
+
+    double audioPwrOutSource[LENGTH][A_WIDTH];
+    readAudioPwrOut(audioPwrOutSource);
+    printf("%.64lf\n", audioPwrOutSource[3][3]);
+
+    // here
+    double normOffset = 0.0909090909090909116141432377844466827809810638427734375000000000;
+    int64_t nl = 5;
+    double nlExp = 148.4131591025766;
+    double alpha = 0.9982016334024256;
+
+    ElFieldToPower(efData, normOffset, nl, nlExp, alpha, audioPwr);
+    // printf("Source: %.64lf\nResult: %.64lf\n\n", audioPwrOutSource[6][6], audioPwr[6][6]);
+    writeAudioPwr(audioPwr);
+
+    int noWrong = compareData(audioPwrOutSource, audioPwr);
+    if (noWrong == 0) {
+        printf("Test Passed!\n");
+        return 0;
+    } else {
+        printf("Test Failed. Count wrong: %d\n", noWrong);
+        return 1;
+    }
+}

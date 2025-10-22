@@ -1,0 +1,16 @@
+{
+    "files.associations": {
+        "array": "c",
+        "stdio.h": "c",
+        "elfieldtoactivity.h": "c",
+        "string.h": "c",
+        "stdlib.h": "c",
+        "stdint.h": "c",
+        "math.h": "c",
+        "functional": "c",
+        "activitytopower.h": "c"
+    },
+    "python-envs.defaultEnvManager": "ms-python.python:conda",
+    "python-envs.defaultPackageManager": "ms-python.python:conda",
+    "python-envs.pythonProjects": []
+}
